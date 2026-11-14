@@ -135,7 +135,9 @@ class HomeContentTest extends TestCase
             ->assertSee('Hero Title')
             ->assertSee('contents[hero_title]', false)
             ->assertSee('Grow Your Business With Digital Solutions That Work')
-            ->assertSee('Save Changes');
+            ->assertSee('Save Changes')
+            ->assertSee('Home Content')
+            ->assertSee(route('admin.home-content.edit'));
     }
 
     public function test_edit_page_shows_the_validation_error_with_the_previous_input(): void
