@@ -32,4 +32,13 @@ class FilamentPanelTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function test_admin_users_can_access_the_cms_panel(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->get('/admin/cms');
+
+        $response->assertOk();
+    }
 }
