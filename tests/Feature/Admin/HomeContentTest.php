@@ -124,7 +124,7 @@ class HomeContentTest extends TestCase
     public function test_authenticated_user_can_view_the_home_content_edit_page(): void
     {
         $this->seed(HomeContentSeeder::class);
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user)->get(route('admin.home-content.edit'));
 

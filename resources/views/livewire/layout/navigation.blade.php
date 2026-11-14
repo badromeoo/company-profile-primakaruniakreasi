@@ -28,9 +28,15 @@ $logout = function (Logout $logout) {
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    <x-nav-link :href="route('admin.home-content.edit')" :active="request()->routeIs('admin.home-content.*')" wire:navigate>
-                        {{ __('Home Content') }}
-                    </x-nav-link>
+                    @if (auth()->user()?->is_admin)
+                        <x-nav-link :href="route('admin.home-content.edit')" :active="request()->routeIs('admin.home-content.*')" wire:navigate>
+                            {{ __('Home Content') }}
+                        </x-nav-link>
+
+                        <x-nav-link :href="filament()->getPanel('cms')->getUrl()" :active="request()->is('admin/cms*')">
+                            {{ __('CMS') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -83,9 +89,15 @@ $logout = function (Logout $logout) {
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link :href="route('admin.home-content.edit')" :active="request()->routeIs('admin.home-content.*')" wire:navigate>
-                {{ __('Home Content') }}
-            </x-responsive-nav-link>
+            @if (auth()->user()?->is_admin)
+                <x-responsive-nav-link :href="route('admin.home-content.edit')" :active="request()->routeIs('admin.home-content.*')" wire:navigate>
+                    {{ __('Home Content') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="filament()->getPanel('cms')->getUrl()" :active="request()->is('admin/cms*')">
+                    {{ __('CMS') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
