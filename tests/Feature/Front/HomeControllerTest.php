@@ -75,4 +75,36 @@ class HomeControllerTest extends TestCase
             ->assertSee('Updated Public Hero Title')
             ->assertDontSee('Grow Your Business With Digital Solutions That Work');
     }
+
+    public function test_home_page_renders_branding_navigation_and_typography_markup(): void
+    {
+        $response = $this->get(route('home'));
+
+        $response
+            ->assertOk()
+            ->assertSee('images/background-web.webp', false)
+            ->assertSee('images/logo.webp', false)
+            ->assertSee('id="page-preloader"', false)
+            ->assertSee('youtube-nocookie.com/embed/zuEcnUWsWg0', false)
+            ->assertSee('fonts.bunny.net', false)
+            ->assertDontSee('fonts.googleapis.com', false)
+            ->assertSee('aria-controls="public-menu"', false)
+            ->assertSee('aria-expanded="false"', false)
+            ->assertSee('text-body', false)
+            ->assertSee('text-hero', false)
+            ->assertDontSee('text-4xl', false)
+            ->assertDontSee('Log in')
+            ->assertDontSee('Dashboard')
+            ->assertDontSee(route('login'), false)
+            ->assertSeeInOrder(['Services', 'Our Clients', 'Projects', 'Blog', 'About Us', 'FAQ'])
+            ->assertSeeInOrder([
+                'id="services"',
+                'id="clients"',
+                'id="projects"',
+                'id="blog"',
+                'id="about"',
+                'id="faq"',
+                'id="contact"',
+            ], false);
+    }
 }
