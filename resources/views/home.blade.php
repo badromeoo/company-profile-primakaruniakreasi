@@ -109,23 +109,50 @@
 
         <main class="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 lg:gap-8 lg:px-8 lg:py-14">
             <section id="hero" class="rounded-3xl bg-white/20 p-8 shadow-sm ring-1 ring-white/60 backdrop-blur-sm sm:p-12 lg:p-16 dark:bg-gray-900/25 dark:ring-white/10">
-                <div class="max-w-3xl">
-                    <p class="text-sm font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-                        {{ __('Company Profile') }}
-                    </p>
+                {{-- TODO: pindahkan ID video ke home_contents (hero_video_id) bila ingin dikelola lewat CMS. --}}
+                @php($youtubeVideoId = 'zuEcnUWsWg0')
 
-                    <h1 class="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
-                        {{ $contents['hero_title'] ?? 'Welcome to Our Company' }}
-                    </h1>
+                <div class="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-12">
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                            {{ __('Company Profile') }}
+                        </p>
 
-                    <p class="mt-6 text-lg leading-relaxed text-gray-600 dark:text-gray-300">
-                        {{ $contents['hero_subtitle'] ?? 'We build digital experiences that help your business grow.' }}
-                    </p>
+                        <h1 class="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
+                            {{ $contents['hero_title'] ?? 'Welcome to Our Company' }}
+                        </h1>
 
-                    <div class="mt-8">
-                        <a href="#services" class="inline-flex items-center rounded-md bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-offset-gray-900">
-                            {{ $contents['hero_button_text'] ?? 'Learn More' }}
-                        </a>
+                        <p class="mt-6 text-lg leading-relaxed text-gray-600 dark:text-gray-300">
+                            {{ $contents['hero_subtitle'] ?? 'We build digital experiences that help your business grow.' }}
+                        </p>
+
+                        <div class="mt-8">
+                            <a href="#services" class="inline-flex items-center rounded-md bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-offset-gray-900">
+                                {{ $contents['hero_button_text'] ?? 'Learn More' }}
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="overflow-hidden rounded-2xl shadow-sm ring-1 ring-white/60 dark:ring-white/10">
+                            <div class="aspect-video">
+                                <iframe
+                                    src="https://www.youtube-nocookie.com/embed/{{ $youtubeVideoId }}?rel=0"
+                                    title="Profil PRIMA Karunia Kreasi"
+                                    class="h-full w-full"
+                                    loading="lazy"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    referrerpolicy="strict-origin-when-cross-origin"
+                                    allowfullscreen
+                                ></iframe>
+                            </div>
+                        </div>
+
+                        <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
+                            <a href="https://www.youtube.com/watch?v={{ $youtubeVideoId }}" target="_blank" rel="noopener noreferrer" class="font-semibold underline-offset-2 transition hover:text-gray-900 hover:underline dark:hover:text-white">
+                                {{ __('Tonton di YouTube') }}
+                            </a>
+                        </p>
                     </div>
                 </div>
             </section>
