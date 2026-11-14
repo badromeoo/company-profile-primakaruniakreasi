@@ -13,6 +13,59 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="min-h-screen font-sans text-gray-900 antialiased dark:text-gray-100">
+        {{-- Preloader: tampil sejak paint pertama, memudar setelah aset selesai dimuat. --}}
+        <div
+            id="page-preloader"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-white transition-opacity duration-500 ease-out dark:bg-gray-950"
+            aria-hidden="true"
+        >
+            <img
+                src="{{ asset('images/logo.webp') }}"
+                alt="PRIMA Karunia Kreasi"
+                class="h-16 w-auto animate-pulse object-contain sm:h-20"
+            />
+        </div>
+
+        <noscript>
+            <style>
+                #page-preloader {
+                    display: none !important;
+                }
+            </style>
+        </noscript>
+
+        <script>
+            (() => {
+                const preloader = document.getElementById('page-preloader');
+
+                if (!preloader) {
+                    return;
+                }
+
+                let isHidden = false;
+
+                const hidePreloader = () => {
+                    if (isHidden) {
+                        return;
+                    }
+
+                    isHidden = true;
+
+                    preloader.classList.add('pointer-events-none', 'opacity-0');
+                    window.setTimeout(() => preloader.remove(), 500);
+                };
+
+                if (document.readyState === 'complete') {
+                    window.setTimeout(hidePreloader, 300);
+                } else {
+                    window.addEventListener('load', () => window.setTimeout(hidePreloader, 300), { once: true });
+                }
+
+                // Jaring pengaman: overlay tidak boleh mengunci halaman bila event load terlewat.
+                window.setTimeout(hidePreloader, 3000);
+            })();
+        </script>
+
         {{-- Global background canvas: one fixed layer behind every section. --}}
         <div
             class="pointer-events-none fixed inset-0 -z-10 bg-[#eff4fd] bg-cover bg-center bg-no-repeat dark:bg-gray-950"
