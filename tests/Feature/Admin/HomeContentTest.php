@@ -120,4 +120,57 @@ class HomeContentTest extends TestCase
             'content_value' => 'Grow Your Business With Digital Solutions That Work',
         ]);
     }
+
+    public function test_authenticated_user_can_view_the_home_content_edit_page(): void
+    {
+        $this->seed(HomeContentSeeder::class);
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('admin.home-content.edit'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Hero Section')
+            ->assertSee('About Section')
+            ->assertSee('Hero Title')
+            ->assertSee('contents[hero_title]', false)
+            ->assertSee('Grow Your Business With Digital Solutions That Work')
+            ->assertSee('Save Changes');
+    }
+
+    public function test_edit_page_shows_the_validation_error_with_the_previous_input(): void
+    {
+        $this->seed(HomeContentSeeder::class);
+        $user = User::factory()->create();
+        $tooLongValue = str_repeat('a', 5001);
+
+        $response = $this->actingAs($user)
+            ->from(route('admin.home-content.edit'))
+            ->followingRedirects()
+            ->put(route('admin.home-content.update'), [
+                'contents' => ['hero_title' => $tooLongValue],
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertSee('The Hero Title field must not be greater than 5000 characters.')
+            ->assertSee($tooLongValue);
+    }
+
+    public function test_edit_page_confirms_a_successful_update(): void
+    {
+        $this->seed(HomeContentSeeder::class);
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)
+            ->followingRedirects()
+            ->put(route('admin.home-content.update'), [
+                'contents' => ['hero_title' => 'A New Hero Title'],
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertSee('Home page content saved successfully.')
+            ->assertSee('A New Hero Title');
+    }
 }

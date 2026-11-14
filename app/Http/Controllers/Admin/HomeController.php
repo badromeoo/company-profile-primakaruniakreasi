@@ -7,6 +7,7 @@ use App\Models\HomeContent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -30,14 +31,25 @@ class HomeController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
-        /** @var array{contents: array<string, string|null>} $validated */
-        $validated = $request->validate([
-            'contents' => ['required', 'array'],
-            'contents.*' => ['nullable', 'string', 'max:5000'],
-        ]);
+        $sectionKeys = HomeContent::query()->pluck('section_key')->all();
 
-        $allowedKeys = HomeContent::query()->pluck('section_key')->all();
-        $updates = array_intersect_key($validated['contents'], array_flip($allowedKeys));
+        $attributeLabels = [];
+
+        foreach ($sectionKeys as $sectionKey) {
+            $attributeLabels['contents.'.$sectionKey] = Str::headline($sectionKey);
+        }
+
+        /** @var array{contents: array<string, string|null>} $validated */
+        $validated = $request->validate(
+            [
+                'contents' => ['required', 'array'],
+                'contents.*' => ['nullable', 'string', 'max:5000'],
+            ],
+            [],
+            $attributeLabels,
+        );
+
+        $updates = array_intersect_key($validated['contents'], array_flip($sectionKeys));
 
         DB::transaction(function () use ($updates): void {
             foreach ($updates as $sectionKey => $contentValue) {
