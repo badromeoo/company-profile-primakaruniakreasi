@@ -76,6 +76,16 @@
             <div class="absolute inset-0 bg-gradient-to-b from-white/5 via-white/15 to-white/60 dark:from-gray-950/75 dark:via-gray-950/80 dark:to-gray-950/90"></div>
         </div>
 
+        {{-- Menu publik: target masih anchor; ganti ke route() saat halaman detail dibuat. --}}
+        @php($publicMenu = [
+            ['label' => 'Services', 'href' => '#services'],
+            ['label' => 'Our Clients', 'href' => '#clients'],
+            ['label' => 'Projects', 'href' => '#projects'],
+            ['label' => 'Blog', 'href' => '#blog'],
+            ['label' => 'About Us', 'href' => '#about'],
+            ['label' => 'FAQ', 'href' => '#faq'],
+        ])
+
         <header class="sticky top-0 z-40 border-b border-white/40 bg-white/45 backdrop-blur-md dark:border-white/10 dark:bg-gray-900/40">
             <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                 <a href="{{ route('home') }}" class="flex items-center">
@@ -86,26 +96,107 @@
                     />
                 </a>
 
-                <nav class="flex items-center gap-4 text-sm font-medium">
-                    <a href="#about" class="hidden text-gray-600 transition hover:text-gray-900 dark:text-gray-300 dark:hover:text-white sm:block">
-                        {{ __('About') }}
-                    </a>
-                    <a href="#services" class="hidden text-gray-600 transition hover:text-gray-900 dark:text-gray-300 dark:hover:text-white sm:block">
-                        {{ __('Services') }}
-                    </a>
-
-                    @auth
-                        <a href="{{ url('/dashboard') }}" class="rounded-md border border-white/60 bg-white/50 px-4 py-2 text-gray-700 transition hover:bg-white/80 dark:border-white/10 dark:bg-gray-900/40 dark:text-gray-300 dark:hover:bg-gray-800/60">
-                            {{ __('Dashboard') }}
+                <nav class="hidden items-center gap-6 text-sm font-medium lg:flex">
+                    @foreach ($publicMenu as $item)
+                        <a href="{{ $item['href'] }}" class="text-gray-600 transition hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
+                            {{ $item['label'] }}
                         </a>
-                    @else
-                        <a href="{{ route('login') }}" class="rounded-md border border-white/60 bg-white/50 px-4 py-2 text-gray-700 transition hover:bg-white/80 dark:border-white/10 dark:bg-gray-900/40 dark:text-gray-300 dark:hover:bg-gray-800/60">
-                            {{ __('Log in') }}
-                        </a>
-                    @endauth
+                    @endforeach
                 </nav>
+
+                <button
+                    type="button"
+                    id="public-menu-toggle"
+                    aria-controls="public-menu"
+                    aria-expanded="false"
+                    aria-label="Buka menu navigasi"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/60 bg-white/50 text-gray-700 transition hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-white/10 dark:bg-gray-900/40 dark:text-gray-300 dark:hover:bg-gray-800/60 dark:focus:ring-offset-gray-900 lg:hidden"
+                >
+                    <svg id="public-menu-icon-open" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <svg id="public-menu-icon-close" class="hidden h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
+
         </header>
+
+        {{-- Panel mobile dipisah dari <header> agar backdrop-filter mem-blur konten halaman; blur & latar disamakan dengan navbar. --}}
+        <div
+            id="public-menu"
+            class="invisible pointer-events-none fixed inset-x-0 top-16 z-30 -translate-y-2 bg-white/45 opacity-0 shadow-lg backdrop-blur-md transition-all duration-200 ease-out dark:bg-gray-900/40 lg:hidden"
+        >
+            <nav class="mx-auto flex max-w-7xl flex-col items-center gap-1 px-4 py-3 text-center sm:px-6">
+                @foreach ($publicMenu as $item)
+                    <a href="{{ $item['href'] }}" class="w-full rounded-md px-3 py-2.5 text-center text-sm font-medium text-gray-700 transition hover:bg-white/60 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white">
+                        {{ $item['label'] }}
+                    </a>
+                @endforeach
+            </nav>
+        </div>
+
+        <script>
+            (() => {
+                const toggle = document.getElementById('public-menu-toggle');
+                const panel = document.getElementById('public-menu');
+                const iconOpen = document.getElementById('public-menu-icon-open');
+                const iconClose = document.getElementById('public-menu-icon-close');
+
+                if (!toggle || !panel) {
+                    return;
+                }
+
+                const isOpen = () => !panel.classList.contains('invisible');
+
+                const closedClasses = ['invisible', 'pointer-events-none', '-translate-y-2', 'opacity-0'];
+
+                const setOpen = (open) => {
+                    closedClasses.forEach((className) => {
+                        panel.classList.toggle(className, !open);
+                    });
+
+                    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    toggle.setAttribute('aria-label', open ? 'Tutup menu navigasi' : 'Buka menu navigasi');
+
+                    if (iconOpen) {
+                        iconOpen.classList.toggle('hidden', open);
+                    }
+
+                    if (iconClose) {
+                        iconClose.classList.toggle('hidden', !open);
+                    }
+                };
+
+                toggle.addEventListener('click', () => setOpen(!isOpen()));
+
+                panel.querySelectorAll('a').forEach((link) => {
+                    link.addEventListener('click', () => setOpen(false));
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && isOpen()) {
+                        setOpen(false);
+                        toggle.focus();
+                    }
+                });
+
+                document.addEventListener('click', (event) => {
+                    if (!isOpen() || panel.contains(event.target) || toggle.contains(event.target)) {
+                        return;
+                    }
+
+                    setOpen(false);
+                });
+
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth >= 1024 && isOpen()) {
+                        setOpen(false);
+                    }
+                });
+            })();
+        </script>
 
         <main class="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 lg:gap-8 lg:px-8 lg:py-14">
             <section id="hero" class="rounded-3xl bg-white/20 p-8 shadow-sm ring-1 ring-white/60 backdrop-blur-sm sm:p-12 lg:p-16 dark:bg-gray-900/25 dark:ring-white/10">
@@ -157,18 +248,6 @@
                 </div>
             </section>
 
-            <section id="about" class="rounded-3xl bg-white/30 p-8 shadow-sm ring-1 ring-white/60 backdrop-blur-sm sm:p-10 dark:bg-gray-900/30 dark:ring-white/10">
-                <div class="grid gap-10 lg:grid-cols-2">
-                    <h2 class="text-3xl font-bold tracking-tight">
-                        {{ $contents['about_title'] ?? 'About Our Company' }}
-                    </h2>
-
-                    <p class="text-lg leading-relaxed text-gray-600 dark:text-gray-300">
-                        {{ $contents['about_text'] ?? 'We are a team of professionals dedicated to helping your business succeed online.' }}
-                    </p>
-                </div>
-            </section>
-
             <section id="services" class="rounded-3xl bg-white/30 p-8 shadow-sm ring-1 ring-white/60 backdrop-blur-sm sm:p-10 dark:bg-gray-900/30 dark:ring-white/10">
                 <div class="max-w-2xl">
                     <h2 class="text-3xl font-bold tracking-tight">
@@ -196,6 +275,108 @@
                             {{ __('Our services will be published here soon.') }}
                         </p>
                     @endforelse
+                </div>
+
+                {{-- TODO: ganti ke route() saat halaman detail layanan dibuat --}}
+                <div class="mt-10">
+                    <a href="#services" class="inline-flex items-center rounded-md bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-offset-gray-900">
+                        {{ __('Selengkapnya') }}
+                    </a>
+                </div>
+            </section>
+
+            <section id="clients" class="rounded-3xl bg-white/30 p-8 shadow-sm ring-1 ring-white/60 backdrop-blur-sm sm:p-10 dark:bg-gray-900/30 dark:ring-white/10">
+                <div class="grid gap-10 lg:grid-cols-2">
+                    <h2 class="text-3xl font-bold tracking-tight">
+                        {{ $contents['clients_title'] ?? 'Our Clients' }}
+                    </h2>
+
+                    <div>
+                        <p class="text-lg leading-relaxed text-gray-600 dark:text-gray-300">
+                            {{ $contents['clients_text'] ?? 'Kami dipercaya oleh instansi, UMKM, dan brand yang ingin tampil lebih profesional di dunia digital.' }}
+                        </p>
+
+                        {{-- TODO: ganti ke route() saat halaman detail klien dibuat --}}
+                        <a href="#clients" class="mt-6 inline-flex items-center rounded-md bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-offset-gray-900">
+                            {{ __('Selengkapnya') }}
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="projects" class="rounded-3xl bg-white/30 p-8 shadow-sm ring-1 ring-white/60 backdrop-blur-sm sm:p-10 dark:bg-gray-900/30 dark:ring-white/10">
+                <div class="grid gap-10 lg:grid-cols-2">
+                    <h2 class="text-3xl font-bold tracking-tight">
+                        {{ $contents['projects_title'] ?? 'Projects' }}
+                    </h2>
+
+                    <div>
+                        <p class="text-lg leading-relaxed text-gray-600 dark:text-gray-300">
+                            {{ $contents['projects_text'] ?? 'Sebagian proyek pilihan yang menunjukkan cara kami membantu klien mengubah ide menjadi hasil yang terukur.' }}
+                        </p>
+
+                        {{-- TODO: ganti ke route() saat halaman detail proyek dibuat --}}
+                        <a href="#projects" class="mt-6 inline-flex items-center rounded-md bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-offset-gray-900">
+                            {{ __('Selengkapnya') }}
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="blog" class="rounded-3xl bg-white/30 p-8 shadow-sm ring-1 ring-white/60 backdrop-blur-sm sm:p-10 dark:bg-gray-900/30 dark:ring-white/10">
+                <div class="grid gap-10 lg:grid-cols-2">
+                    <h2 class="text-3xl font-bold tracking-tight">
+                        {{ $contents['blog_title'] ?? 'Blog' }}
+                    </h2>
+
+                    <div>
+                        <p class="text-lg leading-relaxed text-gray-600 dark:text-gray-300">
+                            {{ $contents['blog_text'] ?? 'Insight, tips, dan kabar terbaru seputar desain, teknologi, dan pertumbuhan bisnis digital.' }}
+                        </p>
+
+                        {{-- TODO: ganti ke route() saat halaman blog dibuat --}}
+                        <a href="#blog" class="mt-6 inline-flex items-center rounded-md bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-offset-gray-900">
+                            {{ __('Selengkapnya') }}
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="about" class="rounded-3xl bg-white/30 p-8 shadow-sm ring-1 ring-white/60 backdrop-blur-sm sm:p-10 dark:bg-gray-900/30 dark:ring-white/10">
+                <div class="grid gap-10 lg:grid-cols-2">
+                    <h2 class="text-3xl font-bold tracking-tight">
+                        {{ $contents['about_title'] ?? 'About Our Company' }}
+                    </h2>
+
+                    <div>
+                        <p class="text-lg leading-relaxed text-gray-600 dark:text-gray-300">
+                            {{ $contents['about_text'] ?? 'We are a team of professionals dedicated to helping your business succeed online.' }}
+                        </p>
+
+                        {{-- TODO: ganti ke route() saat halaman detail about dibuat --}}
+                        <a href="#about" class="mt-6 inline-flex items-center rounded-md bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-offset-gray-900">
+                            {{ __('Selengkapnya') }}
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="faq" class="rounded-3xl bg-white/30 p-8 shadow-sm ring-1 ring-white/60 backdrop-blur-sm sm:p-10 dark:bg-gray-900/30 dark:ring-white/10">
+                <div class="grid gap-10 lg:grid-cols-2">
+                    <h2 class="text-3xl font-bold tracking-tight">
+                        {{ $contents['faq_title'] ?? 'FAQ' }}
+                    </h2>
+
+                    <div>
+                        <p class="text-lg leading-relaxed text-gray-600 dark:text-gray-300">
+                            {{ $contents['faq_text'] ?? 'Jawaban atas pertanyaan yang paling sering kami terima soal proses, waktu pengerjaan, dan biaya.' }}
+                        </p>
+
+                        {{-- TODO: ganti ke route() saat halaman FAQ dibuat --}}
+                        <a href="#faq" class="mt-6 inline-flex items-center rounded-md bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-offset-gray-900">
+                            {{ __('Selengkapnya') }}
+                        </a>
+                    </div>
                 </div>
             </section>
 
