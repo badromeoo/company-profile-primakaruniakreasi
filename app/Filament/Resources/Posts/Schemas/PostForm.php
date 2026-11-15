@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Posts\Schemas;
 
 use App\Enums\PostStatus;
+use App\Support\ImageOptimizer;
+use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
@@ -15,6 +17,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class PostForm
 {
@@ -58,24 +61,46 @@ class PostForm
                                 FileUpload::make('featured_image')
                                     ->image()
                                     ->imageEditor()
+                                    ->imageEditorAspectRatios(['16:9'])
+                                    ->imageAspectRatio('16:9')
+                                    ->automaticallyOpenImageEditorForAspectRatio()
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                     ->disk('public')
                                     ->directory('posts')
                                     ->visibility('public')
                                     ->maxSize(3072)
-                                    ->helperText('JPEG/PNG/WebP maksimal 3 MB. Otomatis dikompres & dikonversi ke WebP (maks 1600 px) saat disimpan.'),
+                                    ->saveUploadedFileUsing(function (BaseFileUpload $component, TemporaryUploadedFile $file): ?string {
+                                        $path = $component->saveUploadedFile($file);
+
+                                        if (! is_string($path) || $path === '') {
+                                            return $path;
+                                        }
+
+                                        return app(ImageOptimizer::class)->toWebpFixed('public', $path, 1600, 900) ?? $path;
+                                    })
+                                    ->helperText('Gambar dipotong ke rasio 16:9 dan disimpan 1600×900 px, sama seperti kartu blog. Geser bingkai editor untuk memilih bagian yang tampil.'),
                                 TextInput::make('featured_image_alt')
                                     ->maxLength(180)
                                     ->helperText('Wajib deskriptif untuk aksesibilitas dan SEO gambar.'),
                                 FileUpload::make('og_image')
                                     ->label('Open Graph image')
                                     ->image()
+                                    ->imageEditor()
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                     ->disk('public')
                                     ->directory('posts/og')
                                     ->visibility('public')
                                     ->maxSize(3072)
-                                    ->helperText('Opsional. JPEG/PNG/WebP maksimal 3 MB, otomatis dikompres ke WebP (maks 1200 px). Kosongkan untuk memakai featured image.'),
+                                    ->saveUploadedFileUsing(function (BaseFileUpload $component, TemporaryUploadedFile $file): ?string {
+                                        $path = $component->saveUploadedFile($file);
+
+                                        if (! is_string($path) || $path === '') {
+                                            return $path;
+                                        }
+
+                                        return app(ImageOptimizer::class)->toWebpFixed('public', $path, 1200, 630) ?? $path;
+                                    })
+                                    ->helperText('Opsional. Dipotong ke 1200×630 px (rasio 1.91:1) dan dikonversi ke WebP. Kosongkan untuk memakai featured image.'),
                             ])
                             ->columns(2),
                         Tab::make('SEO')

@@ -17,12 +17,16 @@ class ImageOptimizer
     private const MAX_PIXELS = 30_000_000;
 
     /**
-     * Convert an image on the given disk to WebP and resize it to fit the maximum dimension.
+     * Convert an image on the given disk to WebP with an exact width and height (center-cropped).
      *
-     * @return string|null The new path when converted, or null when the file is missing, unsupported, or already optimal.
+     * @return string|null The new path when converted, or null when the file is missing, unsupported, or already at the target size.
      */
-    public function toWebp(string $disk, string $path, int $maxDimension, int $quality = self::QUALITY): ?string
+    public function toWebpFixed(string $disk, string $path, int $width, int $height, int $quality = self::QUALITY): ?string
     {
+        if ($width < 1 || $height < 1) {
+            return null;
+        }
+
         $storage = Storage::disk($disk);
 
         try {
@@ -54,18 +58,18 @@ class ImageOptimizer
         try {
             $image = $this->applyExifOrientation($image, $this->localPath($storage, $path));
 
-            $width = imagesx($image);
-            $height = imagesy($image);
+            $sourceWidth = imagesx($image);
+            $sourceHeight = imagesy($image);
 
-            if ($width < 1 || $height < 1) {
+            if ($sourceWidth < 1 || $sourceHeight < 1) {
                 return null;
             }
 
-            if (Str::endsWith(Str::lower($path), '.webp') && max($width, $height) <= $maxDimension) {
+            if (Str::endsWith(Str::lower($path), '.webp') && $sourceWidth === $width && $sourceHeight === $height) {
                 return null;
             }
 
-            $image = $this->resizeToFit($image, $maxDimension);
+            $image = $this->cropAndResize($image, $width, $height);
 
             $encoded = $this->encodeWebp($image, $quality);
 
@@ -136,19 +140,26 @@ class ImageOptimizer
         return $image;
     }
 
-    private function resizeToFit(GdImage $image, int $maxDimension): GdImage
+    private function cropAndResize(GdImage $image, int $targetWidth, int $targetHeight): GdImage
     {
-        $width = imagesx($image);
-        $height = imagesy($image);
-        $scale = min(1, $maxDimension / max($width, $height));
+        $sourceWidth = imagesx($image);
+        $sourceHeight = imagesy($image);
+        $sourceRatio = $sourceWidth / $sourceHeight;
+        $targetRatio = $targetWidth / $targetHeight;
 
-        if ($scale >= 1) {
-            return $image;
+        if ($sourceRatio > $targetRatio) {
+            $cropHeight = $sourceHeight;
+            $cropWidth = max(1, min($sourceWidth, (int) round($sourceHeight * $targetRatio)));
+            $cropX = (int) round(($sourceWidth - $cropWidth) / 2);
+            $cropY = 0;
+        } else {
+            $cropWidth = $sourceWidth;
+            $cropHeight = max(1, min($sourceHeight, (int) round($sourceWidth / $targetRatio)));
+            $cropX = 0;
+            $cropY = (int) round(($sourceHeight - $cropHeight) / 2);
         }
 
-        $newWidth = max(1, (int) round($width * $scale));
-        $newHeight = max(1, (int) round($height * $scale));
-        $resized = imagecreatetruecolor($newWidth, $newHeight);
+        $resized = imagecreatetruecolor($targetWidth, $targetHeight);
 
         imagealphablending($resized, false);
         imagesavealpha($resized, true);
@@ -156,12 +167,23 @@ class ImageOptimizer
             $resized,
             0,
             0,
-            $newWidth,
-            $newHeight,
+            $targetWidth,
+            $targetHeight,
             imagecolorallocatealpha($resized, 0, 0, 0, 127),
         );
 
-        imagecopyresampled($resized, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+        imagecopyresampled(
+            $resized,
+            $image,
+            0,
+            0,
+            $cropX,
+            $cropY,
+            $targetWidth,
+            $targetHeight,
+            $cropWidth,
+            $cropHeight,
+        );
 
         imagedestroy($image);
 

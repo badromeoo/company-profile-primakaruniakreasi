@@ -26,7 +26,7 @@ class OptimizeBlogImages extends Command
             ->orderBy('id')
             ->chunkById(100, function ($posts) use ($optimizer, $dryRun, &$optimized, &$skipped): void {
                 foreach ($posts as $post) {
-                    foreach (['featured_image' => 1600, 'og_image' => 1200] as $attribute => $maxDimension) {
+                    foreach (['featured_image' => [1600, 900], 'og_image' => [1200, 630]] as $attribute => [$width, $height]) {
                         $path = $post->getAttribute($attribute);
 
                         if (! is_string($path) || $path === '') {
@@ -40,7 +40,7 @@ class OptimizeBlogImages extends Command
                             continue;
                         }
 
-                        $newPath = $optimizer->toWebp('public', $path, $maxDimension);
+                        $newPath = $optimizer->toWebpFixed('public', $path, $width, $height);
 
                         if ($newPath === null || $newPath === $path) {
                             $skipped++;
