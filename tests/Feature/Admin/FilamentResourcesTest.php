@@ -46,6 +46,18 @@ class FilamentResourcesTest extends TestCase
             ->assertSee('Publish');
     }
 
+    public function test_blog_image_fields_mark_the_uploader_and_load_the_idle_label_fix(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $post = Post::factory()->create();
+
+        $this->actingAs($admin)
+            ->get(PostResource::getUrl('edit', ['record' => $post]))
+            ->assertOk()
+            ->assertSee('blog-media-upload', false)
+            ->assertSee('.filepond--root:has(.filepond--item) .filepond--drop-label', false);
+    }
+
     public function test_non_admin_users_cannot_browse_filament_resources(): void
     {
         $user = User::factory()->create();

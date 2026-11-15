@@ -12,6 +12,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Icons\Heroicon;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -50,6 +51,10 @@ class AdminPanelProvider extends PanelProvider
                     ->icon(Heroicon::OutlinedHome)
                     ->url(fn (): string => url('/dashboard')),
             ])
+            ->renderHook(
+                PanelsRenderHook::STYLES_AFTER,
+                fn () => view('filament.blog-upload-styles'),
+            )
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
