@@ -5,6 +5,8 @@
                 <li><a href="{{ route('home') }}" class="transition hover:text-gray-900 dark:hover:text-white">{{ __('Home') }}</a></li>
                 <li aria-hidden="true">/</li>
                 <li><a href="{{ route('blog.index') }}" class="transition hover:text-gray-900 dark:hover:text-white">{{ __('Blog') }}</a></li>
+                <li aria-hidden="true">/</li>
+                <li aria-current="page" class="text-gray-900 dark:text-white">{{ $category->name }}</li>
             </ol>
         </nav>
 

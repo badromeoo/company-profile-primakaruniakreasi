@@ -58,22 +58,24 @@ class PostForm
                                 FileUpload::make('featured_image')
                                     ->image()
                                     ->imageEditor()
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                     ->disk('public')
                                     ->directory('posts')
                                     ->visibility('public')
                                     ->maxSize(3072)
-                                    ->helperText('Gunakan gambar WebP/JPEG maksimal 3 MB, ideal 1200×630 px.'),
+                                    ->helperText('JPEG/PNG/WebP maksimal 3 MB. Otomatis dikompres & dikonversi ke WebP (maks 1600 px) saat disimpan.'),
                                 TextInput::make('featured_image_alt')
                                     ->maxLength(180)
                                     ->helperText('Wajib deskriptif untuk aksesibilitas dan SEO gambar.'),
                                 FileUpload::make('og_image')
                                     ->label('Open Graph image')
                                     ->image()
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                     ->disk('public')
                                     ->directory('posts/og')
                                     ->visibility('public')
                                     ->maxSize(3072)
-                                    ->helperText('Opsional. Jika kosong, featured image dipakai untuk social sharing.'),
+                                    ->helperText('Opsional. JPEG/PNG/WebP maksimal 3 MB, otomatis dikompres ke WebP (maks 1200 px). Kosongkan untuk memakai featured image.'),
                             ])
                             ->columns(2),
                         Tab::make('SEO')

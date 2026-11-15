@@ -9,6 +9,7 @@ use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class FilamentResourcesTest extends TestCase
@@ -51,6 +52,11 @@ class FilamentResourcesTest extends TestCase
 
         $this->actingAs($user)->get(PostResource::getUrl('index'))->assertForbidden();
         $this->actingAs($user)->get(CategoryResource::getUrl('index'))->assertForbidden();
+    }
+
+    public function test_public_storage_urls_are_relative_to_the_current_host(): void
+    {
+        $this->assertSame('/storage/posts/example.webp', Storage::disk('public')->url('posts/example.webp'));
     }
 
     public function test_categories_used_by_posts_cannot_be_deleted(): void

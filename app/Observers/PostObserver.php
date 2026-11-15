@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Post;
+use App\Support\ImageOptimizer;
 use Illuminate\Support\Str;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
@@ -26,6 +27,43 @@ class PostObserver
     {
         $post->content = $this->sanitizer()->sanitize((string) $post->content);
         $post->reading_time = $this->calculateReadingTime($post->content);
+    }
+
+    /**
+     * Compress and convert uploaded images to WebP after the post has been persisted.
+     */
+    public function saved(Post $post): void
+    {
+        $this->optimizeImages($post);
+    }
+
+    private function optimizeImages(Post $post): void
+    {
+        $optimizer = app(ImageOptimizer::class);
+        $updates = [];
+
+        foreach (['featured_image' => 1600, 'og_image' => 1200] as $attribute => $maxDimension) {
+            $path = $post->getAttribute($attribute);
+
+            if (! is_string($path) || $path === '') {
+                continue;
+            }
+
+            $optimizedPath = $optimizer->toWebp('public', $path, $maxDimension);
+
+            if ($optimizedPath !== null && $optimizedPath !== $path) {
+                $updates[$attribute] = $optimizedPath;
+            }
+        }
+
+        if ($updates === []) {
+            return;
+        }
+
+        $timestamps = $post->timestamps;
+        $post->timestamps = false;
+        $post->forceFill($updates)->saveQuietly();
+        $post->timestamps = $timestamps;
     }
 
     private function calculateReadingTime(string $content): int

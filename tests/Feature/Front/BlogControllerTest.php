@@ -115,6 +115,16 @@ class BlogControllerTest extends TestCase
             ->assertSee('<meta name="robots" content="noindex, nofollow">', false);
     }
 
+    public function test_category_page_shows_home_blog_category_breadcrumb(): void
+    {
+        $category = Category::factory()->create(['name' => 'Strategi Konten', 'slug' => 'strategi-konten']);
+
+        $this->get(route('blog.category', $category))
+            ->assertOk()
+            ->assertSeeInOrder(['Home', 'Blog', 'Strategi Konten'])
+            ->assertSee('<li aria-current="page" class="text-gray-900 dark:text-white">Strategi Konten</li>', false);
+    }
+
     public function test_public_navigation_links_to_the_blog_index(): void
     {
         $this->get(route('home'))
