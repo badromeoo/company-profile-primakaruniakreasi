@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Post;
+use App\Models\PostSlugRedirect;
 use Illuminate\Support\Str;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
@@ -26,6 +27,27 @@ class PostObserver
     {
         $post->content = $this->sanitizer()->sanitize((string) $post->content);
         $post->reading_time = $this->calculateReadingTime($post->content);
+    }
+
+    /**
+     * Remember the previous slug so the public route can issue a permanent redirect.
+     */
+    public function updating(Post $post): void
+    {
+        if (! $post->isDirty('slug')) {
+            return;
+        }
+
+        $oldSlug = (string) $post->getOriginal('slug');
+
+        if ($oldSlug === '' || $oldSlug === (string) $post->slug) {
+            return;
+        }
+
+        PostSlugRedirect::query()->updateOrCreate(
+            ['old_slug' => $oldSlug],
+            ['post_id' => $post->getKey()],
+        );
     }
 
     private function calculateReadingTime(string $content): int

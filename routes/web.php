@@ -3,9 +3,12 @@
 use App\Http\Controllers\Admin\HomeController as AdminHomeController;
 use App\Http\Controllers\Front\BlogController;
 use App\Http\Controllers\Front\HomeController as FrontHomeController;
+use App\Http\Controllers\Front\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', FrontHomeController::class)->name('home');
+Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
+Route::feeds();
 
 Route::prefix('blog')->name('blog.')->group(function () {
     Route::get('/', [BlogController::class, 'index'])->name('index');

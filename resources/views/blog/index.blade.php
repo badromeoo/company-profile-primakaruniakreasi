@@ -1,4 +1,4 @@
-<x-public-layout :title="$title" :description="$description">
+<x-public-layout :title="$title" :description="$description" :seo="seo()->for($seoData)">
     <main class="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 lg:gap-8 lg:px-8 lg:py-14">
         <section class="rounded-3xl bg-white/30 p-8 shadow-sm ring-1 ring-white/60 backdrop-blur-sm sm:p-10 dark:bg-gray-900/30 dark:ring-white/10">
             <div class="max-w-3xl">

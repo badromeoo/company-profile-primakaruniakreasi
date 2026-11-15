@@ -1,4 +1,4 @@
-<x-public-layout :title="$category->meta_title ?: $category->name" :description="$category->meta_description ?: $category->description">
+<x-public-layout :title="$category->meta_title ?: $category->name" :description="$category->meta_description ?: $category->description" :seo="seo()->for($seoData)">
     <main class="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 lg:gap-8 lg:px-8 lg:py-14">
         <nav aria-label="Breadcrumb" class="text-meta text-gray-600 dark:text-gray-300">
             <ol class="flex flex-wrap items-center gap-2">

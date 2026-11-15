@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\Front;
 
-use App\Enums\PostStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\HomeContent;
 use App\Models\Post;
+use App\Support\SeoTitle;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use RalphJSmit\Laravel\SEO\Schema\BreadcrumbListSchema;
+use RalphJSmit\Laravel\SEO\SchemaCollection;
+use RalphJSmit\Laravel\SEO\Support\SEOData;
 
 class BlogController extends Controller
 {
@@ -31,17 +34,32 @@ class BlogController extends Controller
             ->orderBy('name')
             ->get();
 
+        $title = $contents['blog_title'] ?? 'Blog & Insight';
+        $description = $contents['blog_text'] ?? 'Insight, tips, dan kabar terbaru seputar desain, teknologi, dan pertumbuhan bisnis digital.';
+        $seoTitle = SeoTitle::withoutSuffix($title) ?: $title;
+
         return view('blog.index', [
-            'title' => $contents['blog_title'] ?? 'Blog & Insight',
-            'description' => $contents['blog_text'] ?? 'Insight, tips, dan kabar terbaru seputar desain, teknologi, dan pertumbuhan bisnis digital.',
+            'title' => $title,
+            'description' => $description,
             'posts' => $posts,
             'categories' => $categories,
+            'seoData' => new SEOData(
+                title: $seoTitle,
+                description: $description,
+                url: route('blog.index'),
+                type: 'website',
+                schema: $this->breadcrumbSchema([
+                    'Home' => route('home'),
+                    'Blog' => route('blog.index'),
+                    $seoTitle => route('blog.index'),
+                ]),
+            ),
         ]);
     }
 
     public function show(Post $post): View
     {
-        abort_unless($this->isPublished($post), 404);
+        abort_unless($post->isPublished(), 404);
 
         $post->load(['category', 'author']);
 
@@ -49,6 +67,7 @@ class BlogController extends Controller
             'post' => $post,
             'related' => $this->relatedPosts($post),
             'isPreview' => false,
+            'seoData' => $post->getDynamicSEOData(),
         ]);
     }
 
@@ -64,6 +83,17 @@ class BlogController extends Controller
         return view('blog.category', [
             'category' => $category,
             'posts' => $posts,
+            'seoData' => new SEOData(
+                title: SeoTitle::withoutSuffix($category->meta_title ?: $category->name) ?: $category->name,
+                description: $category->meta_description ?: $category->description,
+                url: route('blog.category', $category),
+                type: 'website',
+                schema: $this->breadcrumbSchema([
+                    'Home' => route('home'),
+                    'Blog' => route('blog.index'),
+                    $category->name => route('blog.category', $category),
+                ]),
+            ),
         ]);
     }
 
@@ -77,14 +107,22 @@ class BlogController extends Controller
             'post' => $post,
             'related' => $this->relatedPosts($post),
             'isPreview' => true,
+            'seoData' => $post->getDynamicSEOData()->markAsNoindex(),
         ]);
     }
 
-    private function isPublished(Post $post): bool
+    /**
+     * @param  array<string, string>  $items
+     */
+    private function breadcrumbSchema(array $items): SchemaCollection
     {
-        return $post->status === PostStatus::Published
-            && $post->published_at !== null
-            && $post->published_at->isPast();
+        return SchemaCollection::initialize()->addBreadcrumbs(
+            function (BreadcrumbListSchema $breadcrumbs) use ($items): BreadcrumbListSchema {
+                $breadcrumbs->breadcrumbs = collect();
+
+                return $breadcrumbs->prependBreadcrumbs($items);
+            }
+        );
     }
 
     /**

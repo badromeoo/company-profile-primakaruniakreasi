@@ -2,6 +2,7 @@
     'title' => null,
     'description' => null,
     'noindex' => false,
+    'seo' => null,
 ])
 
 @php
@@ -24,15 +25,22 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ $pageTitle }}</title>
 
-        @if ($description)
-            <meta name="description" content="{{ $description }}">
+        @if (filled($seo))
+            {!! $seo !!}
+        @else
+            <title>{{ $pageTitle }}</title>
+
+            @if ($description)
+                <meta name="description" content="{{ $description }}">
+            @endif
+
+            @if ($noindex)
+                <meta name="robots" content="noindex, nofollow">
+            @endif
         @endif
 
-        @if ($noindex)
-            <meta name="robots" content="noindex, nofollow">
-        @endif
+        <link rel="alternate" type="application/rss+xml" title="{{ config('app.name') }} Blog" href="{{ url('/feed') }}">
 
         <!-- Fonts -->
         <x-font-links />
