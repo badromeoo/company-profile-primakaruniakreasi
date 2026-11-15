@@ -48,4 +48,36 @@ class FilamentPostUploadTest extends TestCase
             'featured_image' => $post->featured_image,
         ]);
     }
+
+    public function test_non_16_9_uploads_are_cropped_instead_of_rejected(): void
+    {
+        Storage::fake('public');
+
+        $admin = User::factory()->admin()->create();
+        $post = Post::factory()->create();
+
+        $this->actingAs($admin);
+
+        $component = Livewire::test(EditPost::class, ['record' => $post->getRouteKey()])
+            ->fillForm([
+                'featured_image' => UploadedFile::fake()->image('featured.jpg', 2000, 1000),
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $post->refresh();
+
+        $this->assertIsString($post->featured_image);
+        $this->assertStringEndsWith('.webp', $post->featured_image);
+
+        $image = getimagesizefromstring(Storage::disk('public')->get($post->featured_image));
+
+        $this->assertIsArray($image);
+        $this->assertSame(1600, $image[0]);
+        $this->assertSame(900, $image[1]);
+
+        $component->assertFormSet([
+            'featured_image' => $post->featured_image,
+        ]);
+    }
 }

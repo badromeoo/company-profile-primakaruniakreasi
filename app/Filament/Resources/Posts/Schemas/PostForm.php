@@ -62,8 +62,6 @@ class PostForm
                                     ->image()
                                     ->imageEditor()
                                     ->imageEditorAspectRatios(['16:9'])
-                                    ->imageAspectRatio('16:9')
-                                    ->automaticallyOpenImageEditorForAspectRatio()
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                     ->disk('public')
                                     ->directory('posts')
@@ -78,7 +76,7 @@ class PostForm
 
                                         return app(ImageOptimizer::class)->toWebpFixed('public', $path, 1600, 900) ?? $path;
                                     })
-                                    ->helperText('Gambar dipotong ke rasio 16:9 dan disimpan 1600×900 px, sama seperti kartu blog. Geser bingkai editor untuk memilih bagian yang tampil.'),
+                                    ->helperText('Klik ikon pensil untuk memilih area crop 16:9. Gambar otomatis disimpan 1600×900 px, sama seperti kartu blog.'),
                                 TextInput::make('featured_image_alt')
                                     ->maxLength(180)
                                     ->helperText('Wajib deskriptif untuk aksesibilitas dan SEO gambar.'),
