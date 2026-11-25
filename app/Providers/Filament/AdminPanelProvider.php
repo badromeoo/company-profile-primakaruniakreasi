@@ -6,12 +6,10 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\MenuItem;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Support\Icons\Heroicon;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
@@ -32,6 +30,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin/cms')
             ->brandName('PRIMA CMS')
             ->login()
+            ->passwordReset()
+            ->profile()
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -44,12 +44,6 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
-            ])
-            ->userMenuItems([
-                'dashboard' => MenuItem::make()
-                    ->label('Dashboard')
-                    ->icon(Heroicon::OutlinedHome)
-                    ->url(fn (): string => url('/dashboard')),
             ])
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,

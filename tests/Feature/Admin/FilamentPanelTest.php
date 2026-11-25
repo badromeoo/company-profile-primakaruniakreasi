@@ -39,6 +39,34 @@ class FilamentPanelTest extends TestCase
 
         $response = $this->actingAs($admin)->get('/admin/cms');
 
-        $response->assertOk();
+        $response
+            ->assertOk()
+            ->assertSee('Home Content');
+    }
+
+    public function test_legacy_login_url_redirects_to_the_filament_login_page(): void
+    {
+        $response = $this->get('/login');
+
+        $response->assertRedirect('/admin/cms/login');
+    }
+
+    public function test_legacy_dashboard_url_redirects_to_the_cms_panel(): void
+    {
+        $response = $this->get('/dashboard');
+
+        $response->assertRedirect('/admin/cms');
+    }
+
+    public function test_filament_password_reset_page_is_reachable(): void
+    {
+        $this->get(route('filament.cms.auth.password-reset.request'))->assertOk();
+    }
+
+    public function test_admin_can_open_the_filament_profile_page(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)->get(route('filament.cms.auth.profile'))->assertOk();
     }
 }

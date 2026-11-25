@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Admin\HomeController as AdminHomeController;
 use App\Http\Controllers\Front\BlogController;
 use App\Http\Controllers\Front\HomeController as FrontHomeController;
 use App\Http\Controllers\Front\SitemapController;
@@ -19,17 +18,10 @@ Route::prefix('blog')->name('blog.')->group(function () {
     Route::get('{post:slug}', [BlogController::class, 'show'])->name('show');
 });
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-
-Route::view('profile', 'profile')
-    ->middleware(['auth'])
-    ->name('profile');
-
-Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
-    Route::get('home-content', [AdminHomeController::class, 'edit'])->name('home-content.edit');
-    Route::put('home-content', [AdminHomeController::class, 'update'])->name('home-content.update');
-});
-
-require __DIR__.'/auth.php';
+/*
+ * Authentication, account management, and content administration live in the
+ * Filament CMS panel. These redirects keep the legacy Breeze URLs working for
+ * bookmarks, e-mails, and the framework's `auth` middleware redirect target.
+ */
+Route::redirect('login', '/admin/cms/login')->name('login');
+Route::redirect('dashboard', '/admin/cms')->name('dashboard');
